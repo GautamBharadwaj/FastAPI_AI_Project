@@ -5,10 +5,8 @@ from io import BytesIO
 from PIL import Image
 
 # Load model at startup
-model = YOLO("yolov8n.pt")  # Change yolov8n.pt to your model path
-
+model = YOLO("yolov8n.pt")
 app = FastAPI()
-
 
 @app.post("/predict")
 async def predict(
