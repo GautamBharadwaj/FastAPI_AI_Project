@@ -1,31 +1,34 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-import tensorflow as tf
-import numpy as np
-from PIL import Image
+from fastapi import FastAPI, File, UploadFile, Query
+from fastapi.responses import StreamingResponse
+from ultralytics import YOLO
 from io import BytesIO
-import base64
+from PIL import Image
 
-# Load a pre-trained TensorFlow model (e.g., MobileNetV2)
-model = tf.keras.applications.MobileNetV2(weights='imagenet')
+# Load model at startup
+model = YOLO("yolov8n.pt")  # Change yolov8n.pt to your model path
 
 app = FastAPI()
 
-class ImageData(BaseModel):
-    image_base64: str
 
-@app.post("/predict/")
-async def predict(image_data: ImageData):
-    # Decode image from base64 string
-    img_data = base64.b64decode(image_data.image_base64)
-    img = Image.open(BytesIO(img_data))
+@app.post("/predict")
+async def predict(
+    file: UploadFile = File(...),
+    output_image_name: str = Query(default="output_image.png", description="Name of the output image to save")
+):
+    # Read the uploaded image as bytes
+    image_bytes = await file.read()
 
-    # Preprocess the image for prediction
-    img = img.resize((224, 224))
-    img_array = np.array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
+    # Convert the bytes to a PIL image
+    image = Image.open(BytesIO(image_bytes))
 
-    # Predict the class
-    predictions = model.predict(img_array)
-    predicted_class = tf.keras.applications.mobilenet_v2.decode_predictions(predictions, top=1)[0][0][1]
-    return {"predicted_class": predicted_class}
+    # Perform inference using the YOLO model
+    results = model(image)
+    output_array = results[0].plot()  # This gives a NumPy array
+    output_image = Image.fromarray(output_array)
+
+    # Convert the PIL Image to a byte stream
+    img_byte_arr = BytesIO()
+    output_image.save(img_byte_arr, format="PNG")
+    output_image.save(output_image_name)
+    img_byte_arr.seek(0)
+    return StreamingResponse(img_byte_arr, media_type="image/png")
