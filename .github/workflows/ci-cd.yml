@@ -23,7 +23,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/ai-fastapi:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/ai-fastapi2:latest
 
       - name: Install Docker Compose
         run: |

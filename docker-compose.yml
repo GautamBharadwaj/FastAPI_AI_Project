@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   fastapi-app:
-    image: "${DOCKER_USERNAME}/ai-fastapi:latest"
+    image: "${DOCKER_USERNAME}/ai-fastapi2:latest"
     ports:
       - "8000:8000"
     environment:
