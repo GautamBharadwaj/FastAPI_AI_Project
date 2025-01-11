@@ -10,7 +10,6 @@ RUN pip install --upgrade pip
 RUN pip install ultralytics
 RUN pip install fastapi uvicorn
 
-
 # Install NVIDIA CUDA toolkit for GPU support (optional)
 # This requires having an NVIDIA GPU and Docker with GPU support installed
 
